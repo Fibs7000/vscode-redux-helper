@@ -7,7 +7,7 @@ This is the README for your extension "redux-helper". After writing up a brief d
 * Create Actions for usage in Async Environments with just one line
 * Add new Actions, ActionTypes and Reducer entries to existing Reducers (only if initialized by this extension)
 # preview
-![preview][./media/preview.gif]
+![preview](../blob/master/media/preview.gif)
 
 # Usage
 1. To use first init the Redux project by running the init command.
@@ -15,5 +15,5 @@ This is the README for your extension "redux-helper". After writing up a brief d
 
 # License
 
-[MIT LICENSE]./LICENSE
+[MIT LICENSE](../blob/master/LICENSE)
 
