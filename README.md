@@ -1,4 +1,6 @@
-# redux-helper README
+## Reduce Redux Boilerplate!!
+# redux-helper
+
 
 This is the README for your extension "redux-helper". After writing up a brief description, we recommend including the following sections.
 
