@@ -2,13 +2,19 @@
 	"name": "redux-helper",
 	"displayName": "Redux Boilerplate Helper",
 	"description": "This is a plugin for creating Redux boilerplate code at ease",
-	"keywords": ["redux", "creator", "boilerplate", "snippets", "reduce"],
+	"keywords": [
+		"redux",
+		"creator",
+		"boilerplate",
+		"snippets",
+		"reduce"
+	],
 	"repository": {
 		"directory": "./",
 		"type": "git",
 		"url": "https://github.com/Fibs7000/vscode-redux-helper"
 	},
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"author": {
 		"email": "fmoretti981@gmail.com",
 		"name": "Fabio Moretti",
