@@ -2,6 +2,11 @@
 	"name": "redux-helper",
 	"displayName": "Redux Helper",
 	"description": "This is a plugin for creating Redux boilerplate code at ease",
+	"repository": {
+		"directory": "./",
+		"type": "git",
+		"url": "https://github.com/Fibs7000/vscode-redux-helper"
+	},
 	"version": "0.0.1",
 	"author": {
 		"email": "fmoretti981@gmail.com",
