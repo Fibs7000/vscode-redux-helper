@@ -13,6 +13,7 @@ This is the README for your extension "redux-helper". After writing up a brief d
 1. To use first init the Redux project by running the init command.
 2. Then create your first reducer by running the create reducer command.
 
-#License
+# License
+
 [MIT LICENSE]./LICENSE
 
