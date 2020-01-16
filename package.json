@@ -2,6 +2,7 @@
 	"name": "redux-helper",
 	"displayName": "Redux Boilerplate Helper",
 	"description": "This is a plugin for creating Redux boilerplate code at ease",
+	"keywords": ["redux", "creator", "boilerplate", "snippets", "reduce"],
 	"repository": {
 		"directory": "./",
 		"type": "git",
