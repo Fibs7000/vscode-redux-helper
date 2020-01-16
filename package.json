@@ -6,8 +6,9 @@
 	"author": {
 		"email": "fmoretti981@gmail.com",
 		"name": "Fabio Moretti",
-		"url": ""
+		"url": "https://github.com/Fibs7000/vscode-redux-helper"
 	},
+	"publisher": "fabio-moretti",
 	"engines": {
 		"vscode": "^1.41.0"
 	},

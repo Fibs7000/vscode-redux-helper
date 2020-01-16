@@ -1,13 +1,16 @@
 ## Reduce Redux Boilerplate!!
 # redux-helper
 
+This extension helps with redux boilerplating. It automates the process of creating and adding all types of actions.
 
-This is the README for your extension "redux-helper". After writing up a brief description, we recommend including the following sections.
+Works also with saga and redux thunk (if in own file)
+
 
 ## Features
 * Create Typesafe ActionTypes, ActionCreators and Reducer with one command
 * Create Actions for usage in Async Environments with just one line
 * Add new Actions, ActionTypes and Reducer entries to existing Reducers (only if initialized by this extension)
+
 # preview
 ![preview](./media/preview.gif)
 
