@@ -1,6 +1,6 @@
 {
 	"name": "redux-helper",
-	"displayName": "Redux Helper",
+	"displayName": "Redux Boilerplate Helper",
 	"description": "This is a plugin for creating Redux boilerplate code at ease",
 	"repository": {
 		"directory": "./",
