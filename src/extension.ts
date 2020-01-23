@@ -3,12 +3,18 @@
 import * as vscode from 'vscode';
 import * as fs from "fs";
 
-function getReduxPath() {
+type Config = {
+	reduxPath: string,
+	useThunk: boolean
+};
+
+function getReduxPath(): Config {
 	try {
-		const content = fs.readFileSync(vscode.workspace.rootPath + "/.redux-helper").toString();
+		const content = fs.readFileSync(vscode.workspace.rootPath + "/.redux-helper.json").toString();
 		//@ts-ignore
-		const path = (/redux-path: (.*),/.exec(content))[1];
-		return vscode.workspace.rootPath + path;
+		var Config: Config = JSON.parse(content);
+		Config.reduxPath = vscode.workspace.rootPath + Config.reduxPath;
+		return Config;
 	}
 	catch (error) {
 		throw new Error("Please run Redux-init before continuing");
@@ -17,17 +23,18 @@ function getReduxPath() {
 
 function appendReducer(reducerName: string) {
 	try {
-		const path = getReduxPath() + "/store.ts";
+		const cfg = getReduxPath();
+		const path = cfg.reduxPath + "/store.ts";
 		const content = fs.readFileSync(path).toString();
-		var [otherpart, reducerpart] = content.split("//@redux-helper/rootReducer");
+		var [otherpart, reducerpart] = content.split("\n//@redux-helper/rootReducer");
 		const matcher = /(const rootReducer = combineReducers\({)([\w:\s\n\r,]*?)(}\);)/;
 		//@ts-ignore
 		var res = matcher.exec(reducerpart)[2];
 		const lines = res.replace("\r", "").split("\n").map(s => s.trim()).filter(s => s != "");
 		lines.push(`${reducerName}: ${reducerName}Reducer`);
-		res = lines.map(l => "\t" + l.replace(",","")).join(",\n");
+		res = lines.map(l => "\t" + l.replace(",", "")).join(",\n");
 		reducerpart = reducerpart.replace(matcher, "$1\n" + res + "\n$3");
-		fs.writeFileSync(path, [otherpart, `import { ${reducerName}Reducer } from './${reducerName}'\n`, "//@redux-helper/rootReducer", reducerpart].join(""));
+		fs.writeFileSync(path, [otherpart, `import { ${reducerName}Reducer } from './${reducerName}'\n\n`, "//@redux-helper/rootReducer", reducerpart].join(""));
 	}
 	catch (error) {
 		throw new Error("Appending Reducer to Root reducer failed!\nYou have to add it Manually");
@@ -88,12 +95,25 @@ export function activate(context: vscode.ExtensionContext) {
 		if (reduxFolderName === "") {
 			reduxFolderName = "redux";
 		}
+
+		const useThunk = await vscode.window.showInputBox({
+			placeHolder: "Should a thunkAction for async actions automatically be created?",
+			validateInput: (value: string | undefined) => {
+				if (value === undefined) return null;
+
+				if ((/^[YyNn]/.test(value))) return null;
+				return "Type (Y)es or (N)o";
+			}
+		});
+
+		if (useThunk === undefined) return;
+
 		vscode.window.showInformationMessage('Creating folder: ' + path + reduxFolderName);
 		const relPath = path.slice(1) + reduxFolderName;
 		path = vscode.workspace.rootPath + path.slice(1) + reduxFolderName;
 		console.log(path);
 		try {
-			fs.mkdirSync(path);
+			fs.mkdirSync(path, { recursive: true });
 		} catch (error) {
 			vscode.window.showErrorMessage(error.message);
 		}
@@ -117,7 +137,9 @@ export function configureStore() {
 	return store;
 }
 		`);
-		fs.writeFileSync(vscode.workspace.rootPath + "/.redux-helper", "redux-path: " + relPath + ",");
+
+
+		writeConfig(relPath, useThunk.toLowerCase()[0] == "y");
 		// vscode.window.showInformationMessage('Creating folder: ' + path + reduxFolderName);
 
 	});
@@ -126,7 +148,7 @@ export function configureStore() {
 
 	disposable = vscode.commands.registerCommand('extension.createReducer', async () => {
 		// The code you place here will be executed every time your command is executed
-		const reduxpath = getReduxPath();
+		const { reduxPath, useThunk } = getReduxPath();
 		const reducername = await vscode.window.showInputBox({
 			placeHolder: "Reducer name, like 'auth'",
 			validateInput: (value: string | undefined) => {
@@ -164,10 +186,16 @@ export function configureStore() {
 		var actionTypesContent = getActionTypesContent(actions, reducername);
 		var actionsContent = "import * as ACTION_TYPES from './types'\n\n";
 		actionsContent += createActions(actions);
-		actionsContent += "\n\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + ";\n";
+		// actionsContent += "\n\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + ";\n";
 		var reducerContent =
 			`import * as ACTION_TYPES from './types'
-import { ActionsType } from './actions'
+import * as ACTIONS from './actions'
+
+
+type ValueOf<T> = T[keyof T];
+export type ActionsType = ValueOf<{[k in keyof typeof ACTIONS]: ReturnType<typeof ACTIONS[k]>}>
+
+
 export type initialStateType = {
 
 };
@@ -176,25 +204,36 @@ const initialState: initialStateType = {
 
 }
 //@redux-helper/reducer
-export const ${reducername}Reducer = (state: initialStateType, action: ActionsType) => {
+export const ${reducername}Reducer = (state: initialStateType = initialState, action: ActionsType): initialStateType => {
 	switch(action.type){
 		${actions.map(a => `case ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n\t\t")}
 		default: return state;
 	}
 }
 `;
-		const indexContent =
+		let indexContent =
 			`export * from './types'
 export * from './reducer'
 export * from './actions'
 `;
+		if (useThunk) indexContent += "export * from './thunk'\n";
 
+		fs.mkdirSync(reduxPath + "/" + reducername, { recursive: true });
+		fs.writeFileSync(reduxPath + "/" + reducername + "/types.ts", actionTypesContent);
+		fs.writeFileSync(reduxPath + "/" + reducername + "/actions.ts", actionsContent + "\n");
+		fs.writeFileSync(reduxPath + "/" + reducername + "/reducer.ts", reducerContent);
+		if (useThunk){
+			let thunkContent = 
+`import * as ACTIONS from './actions'
+import { ThunkAction } from 'redux-thunk';
+import { StateType } from '../store';
+import {ActionsType} from './reducer';
 
-		fs.mkdirSync(reduxpath + "/" + reducername);
-		fs.writeFileSync(reduxpath + "/" + reducername + "/types.ts", actionTypesContent);
-		fs.writeFileSync(reduxpath + "/" + reducername + "/actions.ts", actionsContent);
-		fs.writeFileSync(reduxpath + "/" + reducername + "/reducer.ts", reducerContent);
-		fs.writeFileSync(reduxpath + "/" + reducername + "/index.ts", indexContent);
+`;
+			thunkContent += createThunkContent(actions);
+			fs.writeFileSync(reduxPath + "/" + reducername + "/thunk.ts", thunkContent);
+		}
+		fs.writeFileSync(reduxPath + "/" + reducername + "/index.ts", indexContent);
 		vscode.window.showInformationMessage("Created reducer!!");
 		appendReducer(reducername);
 		vscode.window.showInformationMessage("Appended to Root Reducer");
@@ -205,8 +244,8 @@ export * from './actions'
 
 	disposable = vscode.commands.registerCommand('extension.addFurtherActions', async () => {
 		// The code you place here will be executed every time your command is executed
-		const reduxpath = getReduxPath();
-		const reducername = await getReducer(reduxpath);
+		const { reduxPath, useThunk } = getReduxPath();
+		const reducername = await getReducer(reduxPath);
 		if (reducername == undefined) return;
 		var types = [];
 		var newType;
@@ -233,18 +272,20 @@ export * from './actions'
 		const actions = getActions(types);
 		console.log(actions);
 
-		var actionTypesContent = "\n"+ getActionTypesContent(actions, reducername);
+		var actionTypesContent = "\n" + getActionTypesContent(actions, reducername);
 		var newActions = createActions(actions);
-		newActions += "\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + "|\n";
+		// newActions += "\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + "|\n";
 		var reducerContent = `${actions.map(a => `case ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n\t\t")}`;
 
-		fs.appendFileSync(reduxpath + "/" + reducername + "/types.ts", actionTypesContent);
-		var oldActionContent = fs.readFileSync(reduxpath + "/" + reducername + "/actions.ts").toString();
-		var [actionPart, typesPart] = oldActionContent.split("\nexport type ActionsType = ");
-		fs.writeFileSync(reduxpath + "/" + reducername + "/actions.ts", actionPart + newActions + typesPart);
-		var oldReducerContent = fs.readFileSync(reduxpath + "/" + reducername + "/reducer.ts").toString();
+		fs.appendFileSync(reduxPath + "/" + reducername + "/types.ts", actionTypesContent);
+		fs.appendFileSync(reduxPath + "/" + reducername + "/actions.ts", "\n" + newActions + "\n");
+		var oldReducerContent = fs.readFileSync(reduxPath + "/" + reducername + "/reducer.ts").toString();
 		var [reducerTop, reducerBottom] = oldReducerContent.split(/switch\s*\(\s*action.type\s*\)\s*{/);
-		fs.writeFileSync(reduxpath + "/" + reducername + "/reducer.ts", reducerTop +"switch (action.type) {\n"+ reducerContent + reducerBottom);
+		fs.writeFileSync(reduxPath + "/" + reducername + "/reducer.ts", reducerTop + "switch (action.type) {\n" + reducerContent + reducerBottom);
+		if (useThunk){
+			let thunkContent = createThunkContent(actions);
+			fs.appendFileSync(reduxPath + "/" + reducername + "/thunk.ts", "\n" + thunkContent);
+		}
 		vscode.window.showInformationMessage("Added Actions!!");
 	});
 
@@ -254,19 +295,70 @@ export * from './actions'
 
 }
 
-function createActions(actions: { actionName: string; actionTypeConst: string; actionTypeValue: string; }[]) {
-	return actions.map(a => `export const ${a.actionName} = (payload: any) => ({
-\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst},
-\tpayload
-})`).join("\n\n");
+type ActionsType = {
+	actionName: string;
+	actionTypeConst: string;
+	actionTypeValue: string;
+	async?: boolean;
+	thunkAction?: string;
+	type?: AsyncActionType;
+};
+
+type AsyncActionType = "request" | "success" |"error";
+
+function createThunkContent(actions: ActionsType[]) {
+	const thunks = actions.filter(a => a.async == true).reduce<{ [key: string]: {[t in AsyncActionType]?: string} }>((t, cv)  => {
+		if (cv.thunkAction && cv.type) {
+			if (!t[cv.thunkAction]) {
+				t[cv.thunkAction] = {};
+			}
+			t[cv.thunkAction][cv.type] = (cv.actionName);
+			return t;
+		}
+		return t;
+	}, {});
+	console.log(thunks);
+	return Object.entries(thunks).map(([thunk, actions])=> 
+`export const ${thunk} = (): ThunkAction<void, StateType, never, ActionsType> => async (dispatch, getState) => {
+\ttry {
+\t\t//dispatch(ACTIONS.${actions.request}(payload: any));
+\t\t//dispatch(ACTIONS.${actions.success}(payload: any));
+\t} catch (error) {
+\t\tdispatch(ACTIONS.${actions.error}(error));
+\t}
+}
+`).join("\n");
+
 }
 
-function getActionTypesContent(actions: { actionName: string; actionTypeConst: string; actionTypeValue: string; }[], reducername: string) {
+function writeConfig(relPath: string, useThunk: boolean) {
+	const config: Config = {
+		reduxPath: relPath,
+		useThunk,
+
+	};
+
+	fs.writeFileSync(vscode.workspace.rootPath + "/.redux-helper.json", JSON.stringify(config));
+}
+
+function createActions(actions: ActionsType[]) {
+	return actions.map(a => {
+		const payloadName = a.actionTypeValue.endsWith("failure") ? "error" : "payload";
+		return `export const ${a.actionName} = (${payloadName}: any) => {
+\treturn ({
+\t\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst},
+\t\t${payloadName}
+\t})
+}`;
+	}).join("\n\n");
+}
+
+function getActionTypesContent(actions: ActionsType[], reducername: string) {
 	return actions.map(a => `export const ${a.actionTypeConst} = "${reducername}/${a.actionTypeValue}"`).join("\n");
 }
 
 function getActions(types: string[]) {
-	return types.map(v => {
+	return types.map((v): ActionsType[] => {
 		var snake_case = v.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 		const isAsync = /\*$/.test(v);
 		if (isAsync) {
@@ -276,17 +368,26 @@ function getActions(types: string[]) {
 				{
 					actionName: v + "Request" + "Action",
 					actionTypeConst: snake_case.toUpperCase() + "_REQUEST",
-					actionTypeValue: snake_case + "_request"
-				},
-				{
-					actionName: v + "Failure" + "Action",
-					actionTypeConst: snake_case.toUpperCase() + "_FAILURE",
-					actionTypeValue: snake_case + "_failure"
+					actionTypeValue: snake_case + "_request",
+					async: true,
+					thunkAction: v,
+					type: "request"
 				},
 				{
 					actionName: v + "Success" + "Action",
 					actionTypeConst: snake_case.toUpperCase() + "_SUCCESS",
-					actionTypeValue: snake_case + "_success"
+					actionTypeValue: snake_case + "_success",
+					async: true,
+					thunkAction: v,
+					type: "success"
+				},
+				{
+					actionName: v + "Failure" + "Action",
+					actionTypeConst: snake_case.toUpperCase() + "_FAILURE",
+					actionTypeValue: snake_case + "_failure",
+					async: true,
+					thunkAction: v,
+					type: "error"
 				}
 			];
 		}
