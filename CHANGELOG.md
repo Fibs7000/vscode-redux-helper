@@ -2,7 +2,7 @@
 
 All notable changes to the "redux-helper" extension will be documented in this file.
 
-## [0.3.1] - 2020-01-23
+## [0.3.2] - 2020-01-23
 ### Added
 - Changelog
 - integrated automated redux Thunk support
@@ -13,6 +13,7 @@ All notable changes to the "redux-helper" extension will be documented in this f
 ### Fixed
 - Fixed some indents
 - robustnes fixed
+- Changelog fixes
 
 
 ## [0.2.0]
