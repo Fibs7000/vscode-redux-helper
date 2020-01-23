@@ -203,12 +203,13 @@ export type initialStateType = {
 const initialState: initialStateType = {
 
 }
-//@redux-helper/reducer
+
+
 export const ${reducername}Reducer = (state: initialStateType = initialState, action: ActionsType): initialStateType => {
-	switch(action.type){
-		${actions.map(a => `case ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n\t\t")}
-		default: return state;
-	}
+\tswitch(action.type){
+\t\t${actions.map(a => `case ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n\t\t")}
+\t\tdefault: return state;
+\t}
 }
 `;
 		let indexContent =
@@ -275,7 +276,7 @@ import {ActionsType} from './reducer';
 		var actionTypesContent = "\n" + getActionTypesContent(actions, reducername);
 		var newActions = createActions(actions);
 		// newActions += "\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + "|\n";
-		var reducerContent = `${actions.map(a => `case ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n\t\t")}`;
+		var reducerContent = `${actions.map(a => `\t\tcase ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n")}`;
 
 		fs.appendFileSync(reduxPath + "/" + reducername + "/types.ts", actionTypesContent);
 		fs.appendFileSync(reduxPath + "/" + reducername + "/actions.ts", "\n" + newActions + "\n");

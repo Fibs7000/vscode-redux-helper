@@ -14,7 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/Fibs7000/vscode-redux-helper"
 	},
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"author": {
 		"email": "fmoretti981@gmail.com",
 		"name": "Fabio Moretti",
@@ -38,15 +38,15 @@
 		"commands": [
 			{
 				"command": "extension.initRedux",
-				"title": "Redux Helper: Initialize new Redux Folder"
+				"title": "Redux Helper: Init"
 			},
 			{
 				"command": "extension.addFurtherActions",
-				"title": "Redux Helper: Add more Actions to Reducer"
+				"title": "Redux Helper: Append actions to reducer"
 			},
 			{
 				"command": "extension.createReducer",
-				"title": "Redux Helper: Create new Reducer"
+				"title": "Redux Helper: New reducer"
 			}
 		]
 	},
