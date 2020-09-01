@@ -2,6 +2,18 @@
 
 All notable changes to the "redux-helper" extension will be documented in this file.
 
+## [0.3.3] - 2020-09-01
+### Added
+- better async behaviour
+- better thunk support
+
+### Changed
+- 
+
+### Fixed
+- fixed indents
+  
+
 ## [0.3.2] - 2020-01-23
 ### Added
 - Changelog
