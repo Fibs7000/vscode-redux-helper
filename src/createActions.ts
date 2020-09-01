@@ -6,13 +6,18 @@ export function createActions(actions: ActionsType[]) {
 
 		return `export const ${a.actionName} = (${createActionParams(a)}) => {
 \treturn ({
-\t\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst},
-\t\t${payloadName}
+\t\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst}${createPayloadName(a)}
 \t})
 }`;
 	}).join("\n\n");
 }
 
+
+function createPayloadName(action: ActionsType): string{
+	if(action.async && action.type === "error") return '\n\t\terror';
+	if(action.async && action.type === "request") return '';
+	return '\n\t\tpayload';
+}
 
 
 function createActionParams(action: ActionsType): string {

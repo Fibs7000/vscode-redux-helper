@@ -6,6 +6,7 @@ import { getActions } from './getActions';
 import { getActionTypesContent } from "./getActionTypesContent";
 import { getReduxPath } from "./getReduxPath";
 import { getReducer } from "./getReducer";
+import { createCase } from './templates';
 export function addActions(): any {
 	return async () => {
 		// The code you place here will be executed every time your command is executed
@@ -44,7 +45,7 @@ export function addActions(): any {
 		var actionTypesContent = "\n" + getActionTypesContent(actions, reducername);
 		var newActions = createActions(actions);
 		// newActions += "\nexport type ActionsType = " + actions.map(a => "ReturnType<typeof " + a.actionName + ">").join(" |\n") + "|\n";
-		var reducerContent = `${actions.map(a => `\t\tcase ACTION_TYPES.${a.actionTypeConst}: return {...state}`).join("\n")}`;
+		var reducerContent = `${actions.map(createCase).join("\n\t\t")}`;
 
 		fs.appendFileSync(reduxPath + "/" + reducername + "/types.ts", actionTypesContent);
 		fs.appendFileSync(reduxPath + "/" + reducername + "/actions.ts", "\n" + newActions + "\n");

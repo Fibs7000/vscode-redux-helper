@@ -34,13 +34,13 @@ export type ActionsType = ValueOf<{[k in keyof typeof ACTIONS]: ReturnType<typeo
 
 export type initialStateType = {
 \tfetching:{
-\t\t${actions.filter(a => a.async == true && a.type == "request").map(a => `${a.async && a.thunkAction}: FetchingType`).join(',\t\t')}
+\t\t${actions.filter(a => a.async == true && a.type == "request").map(a => `${a.async && a.thunkAction}: FetchingType`).join(',\n\t\t')}
 \t}
 };
 
 const initialState: initialStateType = {
 \tfetching:{
-\t\t${actions.filter(a => a.async == true && a.type == "request").map(a => `${a.async && a.thunkAction}: createDefault()`).join(',\t\t')}
+\t\t${actions.filter(a => a.async == true && a.type == "request").map(a => `${a.async && a.thunkAction}: createDefault()`).join(',\n\t\t')}
 \t}
 }
 
