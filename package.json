@@ -14,7 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/Fibs7000/vscode-redux-helper"
 	},
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"author": {
 		"email": "fmoretti981@gmail.com",
 		"name": "Fabio Moretti",
