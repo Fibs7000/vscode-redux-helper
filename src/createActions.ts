@@ -16,7 +16,7 @@ export function createActions(actions: ActionsType[]) {
 
 
 function createActionParams(action: ActionsType): string {
-	if(action.type === "error") return 'error: any';
-	if(action.type === "request") return '';
+	if(action.async && action.type === "error") return 'error: any';
+	if(action.async && action.type === "request") return '';
 	return 'payload: any';
 }

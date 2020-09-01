@@ -36,7 +36,8 @@ export function getActions(types: string[]) {
 		return [{
 			actionName: v + "Action",
 			actionTypeConst: snake_case.toUpperCase(),
-			actionTypeValue: snake_case
+			actionTypeValue: snake_case,
+			async: false
 		}];
 	}).reduce((sum, cv) => [...sum, ...cv], []);
 }

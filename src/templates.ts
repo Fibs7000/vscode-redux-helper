@@ -80,9 +80,9 @@ export * from './actions'
 
 export const thunkTemplate = {
 	header: `import * as ACTIONS from './actions'
-import { ThunkAction } from 'redux-thunk';
-import { StateType } from '../store';
-import {ActionsType} from './reducer';
+import type { ThunkAction } from 'redux-thunk';
+import type { StateType } from '../store';
+import type {ActionsType} from './reducer';
 
 `
 }

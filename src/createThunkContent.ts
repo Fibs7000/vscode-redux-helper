@@ -6,7 +6,7 @@ export function createThunkContent(actions: ActionsType[]) {
 			[t in AsyncActionType]?: string;
 		};
 	}>((t, cv) => {
-		if (cv.thunkAction && cv.type) {
+		if (cv.async) {
 			if (!t[cv.thunkAction]) {
 				t[cv.thunkAction] = {};
 			}
@@ -17,7 +17,7 @@ export function createThunkContent(actions: ActionsType[]) {
 	}, {});
 	return Object.entries(thunks).map(([thunk, actions]) => `export const ${thunk} = (): ThunkAction<void, StateType, never, ActionsType> => async (dispatch, getState) => {
 \ttry {
-\t\t//dispatch(ACTIONS.${actions.request}(payload: any));
+\t\t//dispatch(ACTIONS.${actions.request}());
 \t\t//dispatch(ACTIONS.${actions.success}(payload: any));
 \t} catch (error) {
 \t\tdispatch(ACTIONS.${actions.error}(error));
