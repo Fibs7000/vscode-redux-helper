@@ -2,6 +2,10 @@
 
 All notable changes to the "redux-helper" extension will be documented in this file.
 
+## [0.3.6] - 2020-09-16
+### Fixed
+- fixed Actions
+
 ## [0.3.5] - 2020-09-01
 ### Fixed
 - fixed add Actions

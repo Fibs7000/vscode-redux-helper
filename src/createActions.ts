@@ -6,7 +6,7 @@ export function createActions(actions: ActionsType[]) {
 
 		return `export const ${a.actionName} = (${createActionParams(a)}) => {
 \treturn ({
-\t\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst}${createPayloadName(a)}
+\t\ttype: ACTION_TYPES.${a.actionTypeConst} as typeof ACTION_TYPES.${a.actionTypeConst},${createPayloadName(a)}
 \t})
 }`;
 	}).join("\n\n");
